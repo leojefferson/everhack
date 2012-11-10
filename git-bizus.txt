@@ -1,0 +1,44 @@
+AUTOMATIZANDO O PULL E O PUSH SEM O ORIGIN MASTER
+	git config --global --replace-all push.default tracking
+
+BAIXAR REPO
+	git pull
+
+MANDAR REPO
+	git push
+
+COMMIT
+	git commit -am 'descricao da modificacao'
+	
+ADICIONAR ARQUIVOS
+	git add .
+	
+EXCLUIR ARQUIVO
+	git rm NOMEDOARQUIVO
+	
+RENOMEAR ARQUIVO
+	git mv ORIGEM DESTINO
+	
+COMMIT
+	git commit -am 'descricao da modificacao'
+	
+FERRAMENTA GRAFICA
+	gitk
+	
+MERGE
+	git pull E EDITAR O ARQUIVO EM CONFLITO
+
+IGNORAR ARQUIVO NO CONTROLE DE VERSAO
+	ADICIONAR ARQUIVO .gitignore COM NOMES DE OUTROS ARQUIVOS A SEREM IGNORADOS EM CADA LINHA
+	
+VER ULTIMAS REVISOES
+	git log -numrev
+
+VER BRANCHES
+	git branch
+	
+VER REPOSITORIOS
+	git remote
+	
+ALTERAR BRANCH OU NUMERO DA REVISAO
+	git checkout numerodarevisao
