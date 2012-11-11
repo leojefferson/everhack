@@ -35,7 +35,14 @@ import com.example.everhack.EverHackGamesActivity.ImageSelector;
 import com.evernote.client.conn.mobile.FileData;
 import com.evernote.client.oauth.android.EvernoteSession;
 import com.evernote.client.oauth.android.EvernoteUtil;
+import com.evernote.edam.error.EDAMNotFoundException;
+import com.evernote.edam.error.EDAMSystemException;
+import com.evernote.edam.error.EDAMUserException;
+import com.evernote.edam.notestore.NoteFilter;
+import com.evernote.edam.notestore.NoteList;
+import com.evernote.edam.notestore.NoteStore.Client;
 import com.evernote.edam.type.Note;
+import com.evernote.edam.type.Notebook;
 import com.evernote.edam.type.Resource;
 import com.evernote.edam.type.ResourceAttributes;
 
@@ -43,6 +50,12 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import org.apache.thrift.TException;
+import org.apache.thrift.transport.TTransportException;
 
 public class EverHackGamesActivity extends Activity {
     
@@ -78,6 +91,10 @@ public class EverHackGamesActivity extends Activity {
     // Used to interact with the Evernote web service
     private EvernoteSession mEvernoteSession;
     
+    public static EvernoteSession es;
+    public static List<Note> notesList;
+	private static String res;
+    
     // UI elements that we update
     private Button mBtnAuth;
     private Button mBtnSave;
@@ -95,11 +112,15 @@ public class EverHackGamesActivity extends Activity {
     }
 
     private ImageData mImageData;
+	private Button BtnNotes;
+	private static Client noteStore;
+	private static Note createdNote;
 
     /** Called when the activity is first created. */
     @SuppressWarnings("deprecation")
     @Override
     public void onCreate(Bundle savedInstanceState) {
+    	notesList = new ArrayList<Note>();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
@@ -108,6 +129,7 @@ public class EverHackGamesActivity extends Activity {
         mBtnSave = (Button) findViewById(R.id.save_button);
         mImageView = (ImageView) findViewById(R.id.image);
         BtnGame = (Button) findViewById(R.id.game_button);
+        BtnNotes = (Button) findViewById(R.id.notes_button);
 
         if (getLastNonConfigurationInstance() != null) {
           mImageData = (ImageData) getLastNonConfigurationInstance();
@@ -119,7 +141,15 @@ public class EverHackGamesActivity extends Activity {
         BtnGame.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				startActivity(new Intent(getApplicationContext(), GamesMenuActivity.class));
+				Intent i = new Intent(getApplicationContext(), GamesMenuActivity.class);
+				startActivity(i);
+			}
+		});
+        
+        BtnNotes.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				new NotesReader().execute();
 			}
 		});
     }
@@ -173,6 +203,7 @@ public class EverHackGamesActivity extends Activity {
         mBtnAuth.setText(R.string.label_log_out);
         if(mImageData != null && !TextUtils.isEmpty(mImageData.filePath)) {
           mBtnSave.setEnabled(true);
+          es = mEvernoteSession;
         } else {
           mBtnSave.setEnabled(false);
         }
@@ -254,9 +285,28 @@ public class EverHackGamesActivity extends Activity {
         new EvernoteNoteCreator().execute(mImageData);
       }
     }
+    public class NotesReader extends AsyncTask<Void, Void, Void> {
+    	@SuppressWarnings("deprecation")
+        @Override
+        protected void onPreExecute() {
+          showDialog(DIALOG_PROGRESS);
+        }
+        protected Void doInBackground(Void... Void) {
+        	getNotes();
+        	return null;
+        }
+        @SuppressWarnings("deprecation")
+        @Override
+        protected void onPostExecute(Void p) {
+          removeDialog(DIALOG_PROGRESS);
+        }
+    	
+    }
+    
 
-    public class EvernoteNoteCreator extends AsyncTask<ImageData, Void, Note> {
-      // using showDialog, could use Fragments instead 
+    public class EvernoteNoteCreator extends AsyncTask<ImageData, Void, Note> {     
+
+		// using showDialog, could use Fragments instead 
     	@SuppressWarnings("deprecation")
       @Override
       protected void onPreExecute() {
@@ -271,7 +321,6 @@ public class EverHackGamesActivity extends Activity {
         ImageData imageData = imageDatas[0];
 
 
-        Note createdNote = null;
         String f = imageData.filePath;
         try {
           // Hash the data in the image file. The hash is used to reference the
@@ -306,7 +355,8 @@ public class EverHackGamesActivity extends Activity {
           // Create the note on the server. The returned Note object
           // will contain server-generated attributes such as the note's
           // unique ID (GUID), the Resource's GUID, and the creation and update time.
-          createdNote = mEvernoteSession.createNoteStore().createNote(mEvernoteSession.getAuthToken(), note);
+          noteStore = mEvernoteSession.createNoteStore();
+          createdNote = noteStore.createNote(mEvernoteSession.getAuthToken(), note);
         } catch(Exception e) {
           Log.e(TAG, getString(R.string.err_creating_note), e);
         }
@@ -356,6 +406,7 @@ public class EverHackGamesActivity extends Activity {
       // suppress lint check on Display.getSize(Point)
       @TargetApi(16) 
       protected ImageData doInBackground(Intent... intents) {
+    	  
         if(intents == null || intents.length == 0) {
           return null;
         }
@@ -440,4 +491,93 @@ public class EverHackGamesActivity extends Activity {
         mImageData = image;
       }
     }
+    private void getNotes(){
+  		EvernoteSession es = mEvernoteSession;
+  		List<Notebook> notebooks = null;
+  		
+  		try {
+          	noteStore = es.createNoteStore();
+  			notebooks  = noteStore.listNotebooks(es.getAuthToken());
+  			Log.d("Test", "gOT SOME NOTEBOOKS");
+  		} catch (TTransportException e1) {
+				Log.d("Test", e1.getMessage(), e1);
+  		} catch (EDAMUserException e1) {
+				Log.d("Test", e1.getMessage(), e1);
+  		} catch (EDAMSystemException e1) {
+			Log.d("Test", e1.getMessage(), e1);
+  		} catch (TException e1) {
+			Log.d("Test", e1.getMessage(), e1);
+  		}
+
+//          
+//          if(notebooks == null)
+//          	campodenotas = "NULL";
+//          else
+//          	campodenotas = "NOT NULL";
+  		
+  		
+  		Log.d("Tag", "Found " + (notebooks == null ? "null" : notebooks.size()) + " notebooks");
+  		if(notebooks != null)
+          for(Notebook nb : notebooks){
+          	NoteFilter filter = new NoteFilter();
+          	filter.setNotebookGuid(nb.getGuid());
+          	NoteList notelist = null;
+          	
+      		try {
+      			if(noteStore != null){
+      				notelist = noteStore.findNotes(es.getAuthToken(), filter, 0, 1000);
+      			}
+  			} catch (EDAMUserException e1) {
+  				Log.d("Test", e1.getMessage(), e1);
+  				notelist = null;
+  			} catch (EDAMSystemException e1) {
+  				notelist = null;
+  				Log.d("Test", e1.getMessage(), e1);
+  			} catch (EDAMNotFoundException e1) {
+  				notelist = null;
+  				Log.d("Test", e1.getMessage(), e1);
+  			} catch (TException e1) {
+  				notelist = null;
+  				Log.d("Test", e1.getMessage(), e1);
+  			}
+      		if(notelist != null){
+  				List<Note> notes = notelist.getNotes();
+  				Log.d("Tag", "Found " + (notebooks == null ? "null" : notes.size()) + " notes");
+  	        	for(Note note : notes){
+  	        		if(note != null)
+						try {
+							note = noteStore.getNote(es.getAuthToken(), note.getGuid(), true, false, false, false);
+						} catch (EDAMUserException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (EDAMSystemException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (EDAMNotFoundException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (TException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+  	        			notesList.add(note);       		
+  	        	}
+  	        	
+      		}
+          }
+    }
+    /*
+	public static String getNote(String guid) {
+		try {
+			return (new NoteGetter(guid, noteStore, es).execute()).get();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	*/
 }
