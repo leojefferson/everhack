@@ -2,7 +2,10 @@ package com.example.everhack;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.Intent;
 import android.view.Menu;
+import android.view.View;
+import android.widget.Button;
 
 public class EverHackGamesActivity extends Activity {
 
@@ -10,6 +13,21 @@ public class EverHackGamesActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ever_hack_games);
+        final Button bot1 = (Button) findViewById(R.id.button1);
+        final Button bot2 = (Button) findViewById(R.id.button2);
+
+        bot1.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				startActivity(new Intent(getApplicationContext(), MemoryGameActivity.class));
+			}
+		});
+        bot2.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				startActivity(new Intent(getApplicationContext(), ShuffleWordsActivity.class));
+			}
+		});
     }
 
     @Override
