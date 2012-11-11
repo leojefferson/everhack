@@ -45,7 +45,7 @@ public class GamesMenuActivity extends Activity {
 	        for(Note n : list){
 	        	i++;
 	        	String s1 = n.getContent();
-	        	String s = Util.htmlToPlain(s1);
+	        	String s = Util.htmlToPlain(s1);	        	
 	        	
 	        	campodenotas += i + s + "\n";
 	        }

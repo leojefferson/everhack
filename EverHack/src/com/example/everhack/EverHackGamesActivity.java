@@ -584,25 +584,36 @@ public class EverHackGamesActivity extends Activity {
 
 	public static String[] getRandomPhrase() {		
         
+		String[] frase;
+		
         if(notesList != null){
         	boolean novaNota = true;
-        	String[] frase;
         	while(novaNota){
         		frase = new String[0];
         		int numNota = new Random().nextInt(notesList.size());
         		int cont = 0;
 	        	Note n = notesList.get(numNota);
 		        String s = Util.htmlToPlain(n.getContent());
-		        List<String> frases = Util.textToFrases(s);
+		        //return new String[]{"palavra1","palavra2","palavra3"};
 		        
-		        while(frase.length<5 && frase.length>10 && cont<6){
+		        //List<String> frases = Util.textToFrases(s);
+		        //List<String> 
+		        String[] frases = Util.removeEnter(s).split(" ");
+		        if(frases.length > 10){
+		        	String[] f = new String[10];
+		        	for(int i=0; i<10; i++)
+		        		f[i] = frases[i];
+		        	frases = f;
+		        }
+		        
+		        while((frase.length<5 || frase.length>10) && cont<6){
 		        	cont++;
-			        int numFrase = new Random().nextInt(frases.size());
-			        frase = Util.fraseToArray(frases.get(numFrase));
+			        int numFrase = new Random().nextInt(frases.length);//frases.size());
+			        frase = frases; //Util.fraseToArray(frases.get(numFrase));
 		        }
 		        if(cont < 6)
-		        	novaNota = false; 
-				return frase;
+		        	novaNota = false;
+				return Util.removeEspacos(frase);
 	        }
         }
         return null;

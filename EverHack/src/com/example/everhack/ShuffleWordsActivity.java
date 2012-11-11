@@ -16,28 +16,43 @@ import android.widget.TextView;
 public class ShuffleWordsActivity extends Activity {
 
 	NoteMixer nm;
-	String[] original ;
-	String[] embaralhado;
     @Override
     public void onCreate(Bundle savedInstanceState) {    
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shuffle_words);
         nm = new NoteMixer();
        
+        String[] ori = nm.getOriginal();
+		String[] emb = nm.getMixed();
+		String s = ori[0];
+		for(int i=1; i< ori.length; i++)
+			s += " "+ori[i];
+		s+="\n" + emb[0];
+		for(int i=1; i< emb.length; i++)
+			s += " "+emb[i];
+		
+		((TextView)findViewById(R.id.textView1)).setText(s);
+		
         final Button bot1 = (Button) findViewById(R.id.button1);
 
         bot1.setText("texto");
         bot1.setOnClickListener(new View.OnClickListener() {
     		
     		public void onClick(View v) {
-    			String s = original[0];
-    			for(int i=1; i< original.length; i++)
-    				s += original[i];
-    			s+="\n" + embaralhado[0];
-    			for(int i=1; i< embaralhado.length; i++)
-    				s += embaralhado[i];
+    			String resultado = (String) ((TextView)findViewById(R.id.textView1)).getText();
+    			String[] respostas = Util.removeEspacos(Util.removeEnter(resultado).split(" "));
+    			String[] emb = nm.getMixed();
     			
-    			((TextView)findViewById(R.id.textView1)).setText(s);
+    			boolean igual = true;
+    			for(int i=0; i<respostas.length; i++)
+    				if(!respostas[i].equalsIgnoreCase(emb[i]))
+    					igual = false;
+    			
+    			if(igual)
+    				((TextView)findViewById(R.id.textView1)).setText("CORRETO!");
+    			else
+    				((TextView)findViewById(R.id.textView1)).setText("ERRADO!");
+    				
 //    			((TextView)findViewById(R.id.textView1)).setVisibility(TextView.INVISIBLE);
     		}
     	});
@@ -51,16 +66,18 @@ public class ShuffleWordsActivity extends Activity {
     }
     
     public class NoteMixer{
+    	String[] original;
+    	String[] embaralhada;
     	public NoteMixer(){
-    		inicio();
-    	}
-
-    	
-    	public void inicio(){
-    		
     		original = EverHackGamesActivity.getRandomPhrase();
-    		embaralhado = embaralhar(original);    		
-    		
+    		//original = new String[]{"palavra1","palavra2","palavra3"};
+    		embaralhada = embaralhar(original);
+    	}
+    	public String[] getOriginal(){
+    		return original;   
+    	}
+    	public String[] getMixed(){
+    		return embaralhada;   
     	}
     	private String[] embaralhar(String[] pieces){
     		String[] embaralhado = new String[pieces.length];
@@ -72,9 +89,7 @@ public class ShuffleWordsActivity extends Activity {
     			embaralhado[i] = embaralhado[j];
     			embaralhado[j] = tmp;
     		}
-    		
     		return embaralhado;
-    		
     	}
     }   
     

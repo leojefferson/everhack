@@ -12,13 +12,24 @@
         android:text="@string/hello_world"
         tools:context=".ShuffleWordsActivity" />
 
+    <EditText
+        android:id="@+id/editText1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="74dp"
+        android:ems="10" >
+
+        <requestFocus />
+    </EditText>
+
     <Button
         android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/textView1"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="102dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/textView1"
         android:text="Button" />
 
 </RelativeLayout>
