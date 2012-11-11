@@ -52,6 +52,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.thrift.TException;
@@ -580,4 +581,30 @@ public class EverHackGamesActivity extends Activity {
 		return null;
 	}
 	*/
+
+	public static String[] getRandomPhrase() {		
+        
+        if(notesList != null){
+        	boolean novaNota = true;
+        	String[] frase;
+        	while(novaNota){
+        		frase = new String[0];
+        		int numNota = new Random().nextInt(notesList.size());
+        		int cont = 0;
+	        	Note n = notesList.get(numNota);
+		        String s = Util.htmlToPlain(n.getContent());
+		        List<String> frases = Util.textToFrases(s);
+		        
+		        while(frase.length<5 && frase.length>10 && cont<6){
+		        	cont++;
+			        int numFrase = new Random().nextInt(frases.size());
+			        frase = Util.fraseToArray(frases.get(numFrase));
+		        }
+		        if(cont < 6)
+		        	novaNota = false; 
+				return frase;
+	        }
+        }
+        return null;
+	}
 }

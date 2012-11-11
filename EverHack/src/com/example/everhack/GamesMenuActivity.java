@@ -49,7 +49,8 @@ public class GamesMenuActivity extends Activity {
 	        	
 	        	campodenotas += i + s + "\n";
 	        }
-        txt.setText(campodenotas);
+        //txt.setText(campodenotas);
+        txt.setText("");
 
         bot1.setOnClickListener(new View.OnClickListener() {
 			
